@@ -1,0 +1,106 @@
+import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+import bcrypt from "bcrypt";
+
+// Enum para tipos de cargo
+export const ROLE_HIERARCHY = {
+  'funcionario': 1,
+  'tecnico': 2,
+  'supervisor': 3,
+  'coordenador': 4,
+  'gerente': 5,
+  'diretor': 6,
+  'admin': 7
+} as const;
+
+export type RoleType = keyof typeof ROLE_HIERARCHY;
+
+// Tabela de sessões para autenticação
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  document: text("document").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const employees = pgTable("employees", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  position: text("position").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  status: text("status").notNull().default("active"),
+  role: text("role").notNull().default("funcionario"),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const services = pgTable("services", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  estimatedTime: integer("estimated_time").notNull(),
+  timeUnit: text("time_unit").notNull().default("hours"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Esquemas de autenticação
+export const loginSchema = z.object({
+  username: z.string().min(3, "Username deve ter pelo menos 3 caracteres"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+
+// Esquema com enum de role
+export const roleEnum = z.enum(Object.keys(ROLE_HIERARCHY) as [RoleType, ...RoleType[]]);
+
+// Schemas para inserts
+export const insertCustomerSchema = createInsertSchema(customers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEmployeeSchema = createInsertSchema(employees)
+  .omit({ id: true, createdAt: true })
+  .extend({
+    role: roleEnum.optional(), // Adiciona validação enum para role
+    username: z.string().min(3),
+    password: z.string().min(6),
+  });
+
+export const insertServiceSchema = createInsertSchema(services).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Função para verificar permissões
+export function hasPermission(userRole: RoleType, requiredLevel: RoleType): boolean {
+  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredLevel];
+}
+
+// Função para hashear senha (exemplo de uso)
+export async function hashPassword(plainPassword: string): Promise<string> {
+  const saltRounds = 10;
+  return await bcrypt.hash(plainPassword, saltRounds);
+}
+
+// Tipos inferidos
+export type LoginData = z.infer<typeof loginSchema>;
+
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Customer = typeof customers.$inferSelect;
+
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+export type Employee = typeof employees.$inferSelect;
+
+export type InsertService = z.infer<typeof insertServiceSchema>;
+export type Service = typeof services.$inferSelect;
