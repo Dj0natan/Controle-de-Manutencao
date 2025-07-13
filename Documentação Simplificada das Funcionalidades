@@ -1,0 +1,22 @@
+Principais Funcionalidades Implementadas
+
+✅ Módulo de Clientes:
+Cadastro com validação de CPF/CNPJ brasileiros
+Formatação automática de documentos e telefones
+Listagem em tabela responsiva
+Edição e validação de dados
+
+✅ Módulo de Funcionários:
+Cadastro com cargo e status (Ativo/Inativo)
+Gerenciamento visual com badges
+Controle de status dos funcionários
+
+✅ Módulo de Serviços:
+Cadastro com descrição detalhada
+Tempo estimado configurável (horas, dias, semanas)
+Interface em cards visuais
+
+✅ Dashboard:
+Estatísticas em tempo real
+Cards informativos dos módulos
+Atividades recentes do sistema
