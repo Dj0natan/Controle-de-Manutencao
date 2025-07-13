@@ -20,3 +20,12 @@ Interface em cards visuais
 Estatísticas em tempo real
 Cards informativos dos módulos
 Atividades recentes do sistema
+
+✅Modulo Relatório
+Criação de relatórios a partir da pesquisa feita
+Importação de relatórios com dados pré existente
+exportação em formatos PDF, DOCX, XML e XLSX
+
+✅Modulo Pesquisa
+Responsavel por realizar pesquisas na aplicação
+Registrar logs de pesquisa e usuario que a fez
